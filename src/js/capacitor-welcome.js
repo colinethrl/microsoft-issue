@@ -1,5 +1,6 @@
 import { Browser } from "@capacitor/browser";
 import { SplashScreen } from "@capacitor/splash-screen";
+import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 
 window.customElements.define(
   "capacitor-welcome",
@@ -13,33 +14,35 @@ window.customElements.define(
       root.innerHTML = `
     <main>
       <h1>Capacitor App</h1>
-      <p>
-        This project is used to create a minimal, reproducible example. Just add
-        the affected Capacitor platforms and plugins.
-      </p>
-      <label for="myInput">Website:</label>
-      <input
-        type="text"
-        id="myInput"
-        name="myInput"
-        value="https://capacitorjs.com/"
-      />
-      <button id="open-browser">Open Browser</button>
+      <button id="connect-microsoft" (click)="connectWithMicrosoft()">Microsoft</button>
     </main>
     `;
+    }
+
+    
+
+
+    async connectWithMicrosoft() {
+      const result = await FirebaseAuthentication.signInWithMicrosoft();
+      const provider = new OAuthProvider('microsoft.com');
+      const credentials = provider.credential({
+        idToken: result.credential?.idToken,
+        accessToken: result.credential?.accessToken,
+        rawNonce: result.credential?.nonce
+      });
+      console.log("credentials", credentials)
+  
+      const auth = getAuth();
+      console.log("auth", auth)
     }
 
     connectedCallback() {
       const self = this;
 
       self.shadowRoot
-        .querySelector("#open-browser")
-        .addEventListener("click", async function (event) {
-          const input = self.shadowRoot.getElementById("myInput").value;
-          if (!input) {
-            return;
-          }
-          await Browser.open({ url: input });
+        .querySelector("#connect-microsoft")
+        .addEventListener("click", async (event) => {
+          this.connectWithMicrosoft();
         });
     }
   },
